@@ -147,7 +147,7 @@ namespace ucppabdd
         {
             this.Hide(); // sembunyikan form ini
             main mn = new main(); // ganti dengan nama form menu kamu
-            mn.Show(); // tampilkan form menu
+            mn.Show(); 
         }
     }
 }
