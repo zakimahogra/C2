@@ -187,5 +187,12 @@ namespace ucppabdd
         {
 
         }
+
+        private void btnKembali_Click(object sender, EventArgs e)
+        {
+            this.Hide(); // sembunyikan form ini
+            main mn = new main(); // ganti dengan nama form menu kamu
+            mn.Show(); // tampilkan form menu
+        }
     }
 }

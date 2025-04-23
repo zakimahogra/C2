@@ -41,6 +41,7 @@
             this.btnHapus = new System.Windows.Forms.Button();
             this.btnUpdate = new System.Windows.Forms.Button();
             this.dataGridViewKelolaAcara = new System.Windows.Forms.DataGridView();
+            this.btnKembali = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewKelolaAcara)).BeginInit();
             this.SuspendLayout();
             // 
@@ -155,11 +156,22 @@
             this.dataGridViewKelolaAcara.TabIndex = 12;
             this.dataGridViewKelolaAcara.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewKelolaAcara_CellContentClick);
             // 
+            // btnKembali
+            // 
+            this.btnKembali.Location = new System.Drawing.Point(592, 137);
+            this.btnKembali.Name = "btnKembali";
+            this.btnKembali.Size = new System.Drawing.Size(75, 23);
+            this.btnKembali.TabIndex = 13;
+            this.btnKembali.Text = "Back";
+            this.btnKembali.UseVisualStyleBackColor = true;
+            this.btnKembali.Click += new System.EventHandler(this.btnKembali_Click);
+            // 
             // KelolaAcara
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnKembali);
             this.Controls.Add(this.dataGridViewKelolaAcara);
             this.Controls.Add(this.btnUpdate);
             this.Controls.Add(this.btnHapus);
@@ -196,5 +208,6 @@
         private System.Windows.Forms.Button btnHapus;
         private System.Windows.Forms.Button btnUpdate;
         private System.Windows.Forms.DataGridView dataGridViewKelolaAcara;
+        private System.Windows.Forms.Button btnKembali;
     }
 }

@@ -43,6 +43,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.txtIdTiket = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.btnKembali = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewKelolaDataPeserta)).BeginInit();
             this.SuspendLayout();
             // 
@@ -172,11 +173,22 @@
             this.label6.TabIndex = 41;
             this.label6.Text = "Id_Tiket";
             // 
+            // btnKembali
+            // 
+            this.btnKembali.Location = new System.Drawing.Point(602, 115);
+            this.btnKembali.Name = "btnKembali";
+            this.btnKembali.Size = new System.Drawing.Size(75, 23);
+            this.btnKembali.TabIndex = 43;
+            this.btnKembali.Text = "Back";
+            this.btnKembali.UseVisualStyleBackColor = true;
+            this.btnKembali.Click += new System.EventHandler(this.btnKembali_Click);
+            // 
             // KelolaDataPeserta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnKembali);
             this.Controls.Add(this.txtIdTiket);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.txtNama);
@@ -218,5 +230,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtIdTiket;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button btnKembali;
     }
 }
