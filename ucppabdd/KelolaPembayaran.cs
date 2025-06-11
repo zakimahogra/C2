@@ -8,145 +8,522 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.Caching; // Tambahkan namespace ini untuk MemoryCache
 
 namespace ucppabdd
 {
     public partial class KelolaPembayaran : Form
     {
-        static string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_management;Integrated Security=True;";
+        // String koneksi ke database SQL Server Anda.
+        // Dalam aplikasi sungguhan, disarankan untuk menyimpan ini di App.config.
+        static string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_managementt;Integrated Security=True;";
+
         public KelolaPembayaran()
         {
             InitializeComponent();
-            LoadData();
+            InitializeCustomComponents(); // Panggil metode inisialisasi kustom
+        }
+
+        // Metode inisialisasi kustom untuk mengatur semua komponen saat form dimuat
+        private void InitializeCustomComponents()
+        {
+            LoadComboBoxData(); // Muat data untuk ComboBoxes (dengan optimasi cache)
+            LoadData(); // Muat data pembayaran ke DataGridView
+            // Menghubungkan event CellClick pada DataGridView ke fungsi
+            // Ketika sel di DataGridView diklik, data akan mengisi kolom input.
             dataGridViewKelolaPembayaran.CellClick += dataGridViewKelolaPembayaran_CellContentClick;
         }
 
         private void KelolaPembayaran_Load(object sender, EventArgs e)
         {
-
+            // Event Load ini tidak memerlukan kode tambahan karena semua inisialisasi
+            // sudah ditangani di konstruktor melalui InitializeCustomComponents().
         }
-    
 
+        /// --- Metode untuk memuat data ke ComboBoxes dengan MemoryCache ---
+        private void LoadComboBoxData()
+        {
+            // Bersihkan item ComboBoxes sebelum memuat data baru
+            cmbNamaPeserta.DataSource = null;
+            cmbNamaPeserta.Items.Clear();
+            cmbMetodePembayaran.Items.Clear();
+            cmbStatus.Items.Clear();
+
+            // 1. Memuat data Nama Peserta ke cmbNamaPeserta (dengan MemoryCache)
+            DataTable dtPeserta = null;
+            // Dapatkan instance cache default
+            MemoryCache cache = MemoryCache.Default;
+            string cacheKey = "PesertaDataCache"; // Kunci unik untuk data peserta di cache
+
+            // Coba ambil data peserta dari cache
+            dtPeserta = cache.Get(cacheKey) as DataTable;
+
+            if (dtPeserta == null) // Jika data tidak ada di cache, muat dari database
+            {
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    try
+                    {
+                        con.Open();
+                        string queryPeserta = "SELECT id_peserta, nama FROM data_peserta ORDER BY nama";
+                        SqlDataAdapter daPeserta = new SqlDataAdapter(queryPeserta, con);
+                        dtPeserta = new DataTable();
+                        daPeserta.Fill(dtPeserta);
+
+                        // Tambahkan data ke cache dengan kebijakan kadaluarsa (misal: 10 menit)
+                        CacheItemPolicy policy = new CacheItemPolicy
+                        {
+                            AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(10) // Data akan kadaluarsa setelah 10 menit
+                        };
+                        cache.Set(cacheKey, dtPeserta, policy);
+
+                        Console.WriteLine("Data peserta dimuat dari database dan disimpan ke cache."); // Untuk debug
+                    }
+                    catch (SqlException sqlEx)
+                    {
+                        MessageBox.Show($"Terjadi kesalahan database saat memuat daftar peserta: {sqlEx.Message}\nKode Error: {sqlEx.Number}", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return; // Keluar dari fungsi jika ada kesalahan database
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Terjadi kesalahan tidak terduga saat memuat daftar peserta: {ex.Message}", "Kesalahan Aplikasi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return; // Keluar dari fungsi jika ada kesalahan umum
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Data peserta dimuat dari cache."); // Untuk debug
+            }
+
+            // Pastikan dtPeserta tidak null sebelum digunakan
+            if (dtPeserta != null)
+            {
+                // Tambahkan item placeholder jika ada data. Jika tidak ada data sama sekali, placeholder saja.
+                DataRow placeholderPeserta = dtPeserta.NewRow();
+                placeholderPeserta["id_peserta"] = -1; // Nilai ID yang tidak valid untuk placeholder
+                placeholderPeserta["nama"] = "-- Pilih Peserta --"; // Teks placeholder
+                dtPeserta.Rows.InsertAt(placeholderPeserta, 0); // Sisipkan di awal DataTable
+
+                cmbNamaPeserta.DataSource = dtPeserta;
+                cmbNamaPeserta.DisplayMember = "nama"; // Kolom yang ditampilkan di ComboBox
+                cmbNamaPeserta.ValueMember = "id_peserta"; // Kolom nilai yang akan diambil
+                cmbNamaPeserta.SelectedIndex = 0; // Pilih item placeholder secara default
+            }
+
+            // 2. Mengisi cmbMetodePembayaran (data statis, tidak perlu cache)
+            cmbMetodePembayaran.Items.Add("-- Pilih Metode --"); // Placeholder
+            cmbMetodePembayaran.Items.Add("Transfer");
+            cmbMetodePembayaran.Items.Add("Tunai");
+            cmbMetodePembayaran.SelectedIndex = 0; // Pilih placeholder secara default
+
+            // 3. Mengisi cmbStatus (data statis, tidak perlu cache)
+            cmbStatus.Items.Add("-- Pilih Status --"); // Placeholder
+            cmbStatus.Items.Add("Pending");
+            cmbStatus.Items.Add("Lunas");
+            cmbStatus.SelectedIndex = 0; // Pilih placeholder secara default
+        }
+
+        // --- Event handler untuk tombol "Tambah" ---
         private void btnTambah_Click(object sender, EventArgs e)
         {
+            // --- Validasi Input Kosong (termasuk ComboBox) ---
+            if (cmbNamaPeserta.SelectedValue == null || (int)cmbNamaPeserta.SelectedValue == -1 || // Pastikan bukan placeholder peserta
+                cmbMetodePembayaran.SelectedIndex == 0 || // Pastikan bukan placeholder metode
+                cmbStatus.SelectedIndex == 0 || // Pastikan bukan placeholder status
+                string.IsNullOrWhiteSpace(txtJumlah.Text))
+            {
+                MessageBox.Show("Semua kolom (Nama Peserta, Jumlah, Metode Pembayaran, Status) harus diisi.", "Validasi Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // --- Parsing Input Numerik dan Lainnya dari Control ---
+            int idPeserta = (int)cmbNamaPeserta.SelectedValue;
+            decimal jumlah;
+            // Menggunakan CultureInfo.InvariantCulture untuk parsing yang konsisten (mengabaikan pengaturan regional)
+            if (!decimal.TryParse(txtJumlah.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out jumlah))
+            {
+                MessageBox.Show("Jumlah pembayaran tidak valid. Masukkan angka yang valid (gunakan titik '.' sebagai pemisah desimal).", "Kesalahan Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            string metode = cmbMetodePembayaran.SelectedItem.ToString();
+            string status = cmbStatus.SelectedItem.ToString();
+            DateTime tanggalPembayaran = dtpTanggalPembayaran.Value; // Ambil nilai dari DateTimePicker
+
+            // --- Konfirmasi Penambahan Data ---
+            DialogResult confirmResult = MessageBox.Show("Apakah Anda yakin ingin menambahkan data pembayaran ini?", "Konfirmasi Penambahan Data", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (confirmResult == DialogResult.No)
+            {
+                return; // Batalkan operasi jika pengguna memilih "Tidak"
+            }
+
+            // --- Proses Penambahan Data dengan Transaksi ---
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = "INSERT INTO pembayaran (id_peserta, jumlah, metode_pembayaran, status, tanggal_pembayaran) VALUES (@id_peserta, @jumlah, @metode_pembayaran, @status, @tanggal_pembayaran)";
-                SqlCommand cmd = new SqlCommand(query, con);
+                SqlTransaction transaction = null; // Deklarasikan transaksi
 
-                cmd.Parameters.AddWithValue("@id_peserta", txtIdPeserta.Text);
-                cmd.Parameters.AddWithValue("@jumlah", txtJumlah.Text); // pastikan formatnya sesuai DATE
-                cmd.Parameters.AddWithValue("@metode_pembayaran", txtMetodePembayaran.Text);
-                cmd.Parameters.AddWithValue("@status", txtStatus.Text);
-                cmd.Parameters.AddWithValue("@tanggal_pembayaran", txtTanggalPembayaran.Text);
+                try
+                {
+                    con.Open();
+                    transaction = con.BeginTransaction(); // Mulai transaksi
 
-                con.Open();
-                cmd.ExecuteNonQuery();
-                MessageBox.Show("Data berhasil ditambahkan");
-                ClearForm();
-                LoadData();
+                    // Gunakan Stored Procedure 'sp_TambahPembayaran' untuk menambah data
+                    using (SqlCommand cmd = new SqlCommand("sp_TambahPembayaran", con, transaction)) // Kaitkan command dengan transaksi
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        // Tambah parameter ke stored procedure
+                        cmd.Parameters.AddWithValue("@id_peserta", idPeserta);
+                        cmd.Parameters.AddWithValue("@jumlah", jumlah);
+                        cmd.Parameters.AddWithValue("@metode_pembayaran", metode);
+                        cmd.Parameters.AddWithValue("@status", status);
+                        cmd.Parameters.AddWithValue("@tanggal_pembayaran", tanggalPembayaran); // Tambahkan parameter tanggal
+
+                        cmd.ExecuteNonQuery(); // Eksekusi stored procedure
+
+                        transaction.Commit(); // Komit transaksi jika semua berhasil
+                        MessageBox.Show("Data pembayaran berhasil ditambahkan!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        ClearForm(); // Bersihkan formulir
+                        LoadData(); // Muat ulang data ke DataGridView
+                    }
+                }
+                catch (SqlException sqlEx)
+                {
+                    if (transaction != null)
+                    {
+                        transaction.Rollback(); // Rollback transaksi jika terjadi error SQL
+                    }
+                    if (sqlEx.Number == 547) // Foreign Key constraint violation (ID Peserta tidak ditemukan)
+                    {
+                        MessageBox.Show("Gagal menambahkan pembayaran: ID Peserta tidak ditemukan. Pastikan ID Peserta yang Anda pilih valid dan ada di database.", "Kesalahan Database: ID Peserta Tidak Ditemukan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Terjadi kesalahan database: {sqlEx.Message}\nKode Error: {sqlEx.Number}", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (transaction != null)
+                    {
+                        transaction.Rollback(); // Rollback transaksi jika terjadi error umum
+                    }
+                    MessageBox.Show($"Terjadi kesalahan tidak terduga saat menambahkan data: {ex.Message}", "Kesalahan Aplikasi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
+        // --- Event handler untuk tombol "Hapus" ---
         private void btnHapus_Click(object sender, EventArgs e)
         {
             if (dataGridViewKelolaPembayaran.CurrentRow != null)
             {
-                int id = Convert.ToInt32(dataGridViewKelolaPembayaran.CurrentRow.Cells["id_pembayaran"].Value);
+                // --- Validasi ID Pembayaran untuk Hapus ---
+                if (dataGridViewKelolaPembayaran.CurrentRow.Cells["id_pembayaran"].Value == null)
+                {
+                    MessageBox.Show("ID Pembayaran tidak ditemukan pada baris yang dipilih. Silakan pilih baris yang valid.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
+                int idPembayaran;
+                if (!int.TryParse(dataGridViewKelolaPembayaran.CurrentRow.Cells["id_pembayaran"].Value.ToString(), out idPembayaran))
+                {
+                    MessageBox.Show("Gagal mendapatkan ID Pembayaran. Format ID tidak valid.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // --- Konfirmasi Penghapusan ---
                 var confirm = MessageBox.Show("Yakin ingin menghapus data pembayaran ini?", "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                 if (confirm == DialogResult.Yes)
                 {
                     using (SqlConnection con = new SqlConnection(connectionString))
                     {
-                        string query = "DELETE FROM pembayaran WHERE id_pembayaran = @id";
-                        SqlCommand cmd = new SqlCommand(query, con);
-                        cmd.Parameters.AddWithValue("@id", id);
+                        SqlTransaction transaction = null; // Deklarasikan transaksi
+                        try
+                        {
+                            con.Open();
+                            transaction = con.BeginTransaction(); // Mulai transaksi
 
-                        con.Open();
-                        cmd.ExecuteNonQuery();
-                        MessageBox.Show("Data berhasil dihapus", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        ClearForm();
-                        LoadData();
+                            // Gunakan Stored Procedure 'sp_DeletePembayaran' untuk menghapus data
+                            using (SqlCommand cmd = new SqlCommand("sp_DeletePembayaran", con, transaction)) // Kaitkan dengan transaksi
+                            {
+                                cmd.CommandType = CommandType.StoredProcedure;
+                                cmd.Parameters.AddWithValue("@id_pembayaran", idPembayaran);
+
+                                // ExecuteNonQuery cocok untuk DELETE karena tidak mengembalikan data, hanya jumlah baris terpengaruh
+                                int rowsAffected = cmd.ExecuteNonQuery();
+
+                             
+                                    transaction.Commit(); // Komit jika sukses
+                                    MessageBox.Show("Data berhasil dihapus!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    ClearForm(); // Bersihkan formulir
+                                    LoadData(); // Muat ulang data ke DataGridView
+                               
+                                }
+                            
+                        }
+                        catch (SqlException sqlEx)
+                        {
+                            if (transaction != null)
+                            {
+                                transaction.Rollback(); // Rollback pada error SQL
+                            }
+                            MessageBox.Show($"Terjadi kesalahan database: {sqlEx.Message}\nKode Error: {sqlEx.Number}", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (transaction != null)
+                            {
+                                transaction.Rollback(); // Rollback pada error umum
+                            }
+                            MessageBox.Show("Terjadi kesalahan: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                 }
             }
+            else
+            {
+                MessageBox.Show("Silakan pilih baris yang ingin dihapus di tabel.", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
+        // --- Event handler untuk tombol "Update" ---
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridViewKelolaPembayaran.CurrentRow != null)
             {
-                int id = Convert.ToInt32(dataGridViewKelolaPembayaran.CurrentRow.Cells["id_pembayaran"].Value);
+                // --- Validasi ID Pembayaran untuk Update ---
+                if (dataGridViewKelolaPembayaran.CurrentRow.Cells["id_pembayaran"].Value == null)
+                {
+                    MessageBox.Show("ID Pembayaran tidak ditemukan pada baris yang dipilih. Silakan pilih baris yang valid untuk diupdate.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
+                int idPembayaranToUpdate;
+                if (!int.TryParse(dataGridViewKelolaPembayaran.CurrentRow.Cells["id_pembayaran"].Value.ToString(), out idPembayaranToUpdate))
+                {
+                    MessageBox.Show("Gagal mendapatkan ID Pembayaran untuk update. Format ID tidak valid.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // --- Validasi Input Kosong (termasuk ComboBox) ---
+                if (cmbNamaPeserta.SelectedValue == null || (int)cmbNamaPeserta.SelectedValue == -1 || // Pastikan bukan placeholder peserta
+                    cmbMetodePembayaran.SelectedIndex == 0 || // Pastikan bukan placeholder metode
+                    cmbStatus.SelectedIndex == 0 || // Pastikan bukan placeholder status
+                    string.IsNullOrWhiteSpace(txtJumlah.Text))
+                {
+                    MessageBox.Show("Semua kolom (Nama Peserta, Jumlah, Metode Pembayaran, Status) harus diisi.", "Validasi Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Validasi dan konversi input dari ComboBoxes dan TextBox
+                int idPeserta = (int)cmbNamaPeserta.SelectedValue;
+                decimal jumlah;
+                if (!decimal.TryParse(txtJumlah.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out jumlah))
+                {
+                    MessageBox.Show("Jumlah pembayaran tidak valid. Masukkan angka yang valid (gunakan titik '.' sebagai pemisah desimal).", "Kesalahan Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                string metodePembayaran = cmbMetodePembayaran.SelectedItem.ToString();
+                string status = cmbStatus.SelectedItem.ToString();
+                DateTime tanggalPembayaran = dtpTanggalPembayaran.Value;
+
+
+                // --- Konfirmasi Update Data ---
+                DialogResult confirmResult = MessageBox.Show("Apakah Anda yakin ingin memperbarui data pembayaran ini?", "Konfirmasi Pembaruan Data", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (confirmResult == DialogResult.No)
+                {
+                    return; // Batalkan operasi jika pengguna memilih "Tidak"
+                }
+
+                // --- Proses Update Data dengan Transaksi ---
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
-                    string query = "UPDATE pembayaran SET id_peserta=@id_peserta, jumlah=@jumlah, metode_pembayaran=@metode_pembayaran, status=@status, tanggal_pembayaran=@tanggal_pembayaran WHERE id_pembayaran=@id";
-
-                    SqlCommand cmd = new SqlCommand(query, con);
-
-                    int idPeserta;
-                    if (!int.TryParse(txtIdPeserta.Text, out idPeserta))
+                    SqlTransaction transaction = null; // Deklarasikan transaksi
+                    try
                     {
-                        MessageBox.Show("ID Acara tidak valid.");
-                        return;
+                        con.Open();
+                        transaction = con.BeginTransaction(); // Mulai transaksi
+
+                        // Gunakan Stored Procedure 'sp_UpdatePembayaran' untuk memperbarui data
+                        using (SqlCommand cmd = new SqlCommand("sp_UpdatePembayaran", con, transaction))
+                        {
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.Parameters.AddWithValue("@id_pembayaran", idPembayaranToUpdate); // ID pembayaran yang akan diupdate
+                            cmd.Parameters.AddWithValue("@id_peserta", idPeserta);
+                            cmd.Parameters.AddWithValue("@jumlah", jumlah);
+                            cmd.Parameters.AddWithValue("@metode_pembayaran", metodePembayaran);
+                            cmd.Parameters.AddWithValue("@status", status);
+                            cmd.Parameters.AddWithValue("@tanggal_pembayaran", tanggalPembayaran);
+
+                            // ExecuteNonQuery cocok untuk UPDATE karena tidak mengembalikan data, hanya jumlah baris terpengaruh
+                            int rowsAffected = cmd.ExecuteNonQuery();
+
+                 
+                            
+                                transaction.Commit(); // Komit jika sukses
+                                MessageBox.Show("Data pembayaran berhasil diperbarui!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                ClearForm(); // Bersihkan formulir
+                                LoadData(); // Muat ulang data ke DataGridView
+                            
+                       
+                        }
                     }
-                    decimal jumlah;
-                    if (!decimal.TryParse(txtJumlah.Text, out jumlah))
+                    catch (SqlException sqlEx)
                     {
-                        MessageBox.Show("Jumlah tidak valid.");
-                        return;
+                        if (transaction != null)
+                        {
+                            transaction.Rollback(); // Rollback pada error SQL
+                        }
+                        if (sqlEx.Number == 547) // Foreign Key constraint violation (ID Peserta tidak ditemukan)
+                        {
+                            MessageBox.Show("Gagal memperbarui pembayaran: ID Peserta tidak ditemukan. Pastikan ID Peserta yang Anda pilih valid.", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Terjadi kesalahan database: {sqlEx.Message}\nKode Error: {sqlEx.Number}", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback(); // Rollback pada error umum
+                        }
+                        MessageBox.Show($"Terjadi kesalahan tidak terduga saat memperbarui data: {ex.Message}", "Kesalahan Aplikasi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Silakan pilih baris yang ingin diperbarui di tabel.", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
 
+        // --- Event handler saat mengklik sel di DataGridView ---
+        private void dataGridViewKelolaPembayaran_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0) // Pastikan baris yang diklik valid (bukan header kolom)
+            {
+                DataGridViewRow row = dataGridViewKelolaPembayaran.Rows[e.RowIndex];
 
-                    cmd.Parameters.AddWithValue("@id_peserta", idPeserta);
-                    cmd.Parameters.AddWithValue("@jumlah", jumlah);
-                    cmd.Parameters.AddWithValue("@metode_pembayaran", txtMetodePembayaran.Text);
-                    cmd.Parameters.AddWithValue("@status", txtStatus.Text);
-                    cmd.Parameters.AddWithValue("@tanggal_pembayaran", txtTanggalPembayaran.Text);
-                    cmd.Parameters.AddWithValue("@id", id);
+                // Mengatur nilai ComboBox Nama Peserta
+                if (row.Cells["id_peserta"].Value != DBNull.Value)
+                {
+                    // Convert.ToInt32 bisa menimbulkan error jika value bukan integer.
+                    // Gunakan TryParse untuk penanganan error yang lebih baik atau pastikan tipe data sudah benar di grid.
+                    int idPesertaFromGrid;
+                    if (int.TryParse(row.Cells["id_peserta"].Value.ToString(), out idPesertaFromGrid))
+                    {
+                        cmbNamaPeserta.SelectedValue = idPesertaFromGrid;
+                    }
+                    else
+                    {
+                        cmbNamaPeserta.SelectedIndex = 0; // Pilih placeholder jika gagal parsing
+                    }
+                }
+                else
+                {
+                    cmbNamaPeserta.SelectedIndex = 0; // Pilih placeholder jika ID Peserta null
+                }
 
-                    con.Open();
-                    cmd.ExecuteNonQuery();
+                // Mengisi TextBox Jumlah (gunakan null-conditional operator untuk keamanan)
+                txtJumlah.Text = row.Cells["jumlah"].Value?.ToString() ?? string.Empty;
 
-                    MessageBox.Show("Data berhasil diperbarui");
-                    ClearForm();
-                    LoadData();
+                // Mengatur nilai ComboBox Metode Pembayaran
+                if (row.Cells["metode_pembayaran"].Value != DBNull.Value)
+                {
+                    string metode = row.Cells["metode_pembayaran"].Value.ToString();
+                    int indexMetode = cmbMetodePembayaran.FindStringExact(metode);
+                    if (indexMetode != -1)
+                    {
+                        cmbMetodePembayaran.SelectedIndex = indexMetode;
+                    }
+                    else
+                    {
+                        cmbMetodePembayaran.SelectedIndex = 0; // Pilih placeholder jika tidak ditemukan
+                    }
+                }
+                else
+                {
+                    cmbMetodePembayaran.SelectedIndex = 0; // Pilih placeholder jika Metode Pembayaran null
+                }
+
+                // Mengatur nilai ComboBox Status
+                if (row.Cells["status"].Value != DBNull.Value)
+                {
+                    string status = row.Cells["status"].Value.ToString();
+                    int indexStatus = cmbStatus.FindStringExact(status);
+                    if (indexStatus != -1)
+                    {
+                        cmbStatus.SelectedIndex = indexStatus;
+                    }
+                    else
+                    {
+                        cmbStatus.SelectedIndex = 0; // Pilih placeholder jika tidak ditemukan
+                    }
+                }
+                else
+                {
+                    cmbStatus.SelectedIndex = 0; // Pilih placeholder jika Status null
+                }
+
+                // Mengatur nilai DateTimePicker
+                if (row.Cells["tanggal_pembayaran"].Value != DBNull.Value)
+                {
+                    DateTime tanggalFromGrid;
+                    if (DateTime.TryParse(row.Cells["tanggal_pembayaran"].Value.ToString(), out tanggalFromGrid))
+                    {
+                        dtpTanggalPembayaran.Value = tanggalFromGrid;
+                    }
+                    else
+                    {
+                        dtpTanggalPembayaran.Value = DateTime.Today; // Reset ke tanggal hari ini jika gagal parsing
+                    }
+                }
+                else
+                {
+                    dtpTanggalPembayaran.Value = DateTime.Today; // Reset ke tanggal hari ini jika Tanggal Pembayaran null
                 }
             }
         }
 
-        private void dataGridViewKelolaPembayaran_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                DataGridViewRow row = dataGridViewKelolaPembayaran.Rows[e.RowIndex];
-
-                txtIdPeserta.Text = row.Cells["id_peserta"].Value.ToString();
-                txtJumlah.Text = row.Cells["jumlah"].Value.ToString();
-                txtMetodePembayaran.Text = row.Cells["metode_pembayaran"].Value.ToString();
-                txtStatus.Text = row.Cells["status"].Value.ToString();
-                txtTanggalPembayaran.Text = row.Cells["tanggal_pembayaran"].Value.ToString();
-            }
-        }
-
+        // --- Metode untuk mengosongkan semua input di formulir ---
         private void ClearForm()
         {
-            txtIdPeserta.Clear();
+            cmbNamaPeserta.SelectedIndex = 0; // Reset ComboBox ke placeholder
             txtJumlah.Clear();
-            txtMetodePembayaran.Clear();
-            txtStatus.Clear();
-            txtTanggalPembayaran.Clear();
+            cmbMetodePembayaran.SelectedIndex = 0; // Reset ComboBox ke placeholder
+            cmbStatus.SelectedIndex = 0; // Reset ComboBox ke placeholder
+            dtpTanggalPembayaran.Value = DateTime.Today; // Reset DateTimePicker ke tanggal hari ini
         }
 
+        // --- Metode untuk memuat data pembayaran dari database ke DataGridView ---
         private void LoadData()
         {
             try
             {
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
-                    string query = "SELECT * FROM pembayaran";
+                    // Query untuk mengambil data pembayaran dengan JOIN ke data_peserta
+                    // untuk menampilkan nama peserta (nama_peserta) di DataGridView
+                    string query = @"
+                        SELECT
+                            p.id_pembayaran,
+                            p.id_peserta,
+                            dp.nama AS nama_peserta, -- Alias kolom nama dari data_peserta
+                            p.jumlah,
+                            p.metode_pembayaran,
+                            p.status,
+                            p.tanggal_pembayaran
+                        FROM
+                            pembayaran p
+                        JOIN
+                            data_peserta dp ON p.id_peserta = dp.id_peserta;";
                     SqlDataAdapter da = new SqlDataAdapter(query, con);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
@@ -155,19 +532,22 @@ namespace ucppabdd
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Gagal memuat data: " + ex.Message);
+                MessageBox.Show("Gagal memuat data pembayaran: " + ex.Message, "Error Load Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-
-
         }
 
+        // --- Event handler untuk tombol "Kembali" ---
         private void btnKembali_Click(object sender, EventArgs e)
         {
-            this.Hide(); // sembunyikan form ini
-            main mn = new main(); // ganti dengan nama form menu kamu
-            mn.Show(); // tampilkan form menu
+            this.Hide(); // Sembunyikan form saat ini
+            main mn = new main(); // Buat instance form menu utama Anda (ganti 'main' jika nama form Anda berbeda)
+            mn.Show(); // Tampilkan form menu utama
+        }
+
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Event ini mungkin tidak memerlukan implementasi khusus jika tidak ada logika tambahan
+            // yang diperlukan saat ComboBox cmbStatus berubah pilihan.
         }
     }
 }
-

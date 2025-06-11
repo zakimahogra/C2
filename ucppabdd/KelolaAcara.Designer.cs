@@ -34,7 +34,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.txtNamaAcara = new System.Windows.Forms.TextBox();
-            this.txtTanggal = new System.Windows.Forms.TextBox();
             this.txtLokasi = new System.Windows.Forms.TextBox();
             this.txtDeskripsi = new System.Windows.Forms.TextBox();
             this.btnTambah = new System.Windows.Forms.Button();
@@ -42,135 +41,172 @@
             this.btnUpdate = new System.Windows.Forms.Button();
             this.dataGridViewKelolaAcara = new System.Windows.Forms.DataGridView();
             this.btnKembali = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
+            this.dtpTanggal = new System.Windows.Forms.DateTimePicker();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewKelolaAcara)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(107, 61);
+            this.label1.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(379, 113);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(66, 13);
+            this.label1.Size = new System.Drawing.Size(83, 16);
             this.label1.TabIndex = 0;
             this.label1.Text = "Nama Acara";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(107, 104);
+            this.label2.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(379, 156);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(46, 13);
+            this.label2.Size = new System.Drawing.Size(58, 16);
             this.label2.TabIndex = 1;
             this.label2.Text = "Tanggal";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(107, 148);
+            this.label3.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Location = new System.Drawing.Point(379, 200);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(38, 13);
+            this.label3.Size = new System.Drawing.Size(47, 16);
             this.label3.TabIndex = 2;
             this.label3.Text = "Lokasi";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(107, 192);
+            this.label4.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(379, 244);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(50, 13);
+            this.label4.Size = new System.Drawing.Size(64, 16);
             this.label4.TabIndex = 3;
             this.label4.Text = "Deskripsi";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(399, 219);
+            this.label5.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.label5.Location = new System.Drawing.Point(671, 271);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(0, 13);
             this.label5.TabIndex = 4;
             // 
             // txtNamaAcara
             // 
-            this.txtNamaAcara.Location = new System.Drawing.Point(254, 61);
+            this.txtNamaAcara.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.txtNamaAcara.Location = new System.Drawing.Point(526, 113);
             this.txtNamaAcara.Name = "txtNamaAcara";
             this.txtNamaAcara.Size = new System.Drawing.Size(244, 20);
             this.txtNamaAcara.TabIndex = 5;
             // 
-            // txtTanggal
-            // 
-            this.txtTanggal.Location = new System.Drawing.Point(254, 104);
-            this.txtTanggal.Name = "txtTanggal";
-            this.txtTanggal.Size = new System.Drawing.Size(244, 20);
-            this.txtTanggal.TabIndex = 6;
-            // 
             // txtLokasi
             // 
-            this.txtLokasi.Location = new System.Drawing.Point(254, 148);
+            this.txtLokasi.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.txtLokasi.Location = new System.Drawing.Point(526, 200);
             this.txtLokasi.Name = "txtLokasi";
             this.txtLokasi.Size = new System.Drawing.Size(244, 20);
             this.txtLokasi.TabIndex = 7;
             // 
             // txtDeskripsi
             // 
-            this.txtDeskripsi.Location = new System.Drawing.Point(254, 192);
+            this.txtDeskripsi.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.txtDeskripsi.Location = new System.Drawing.Point(526, 244);
             this.txtDeskripsi.Name = "txtDeskripsi";
             this.txtDeskripsi.Size = new System.Drawing.Size(244, 20);
             this.txtDeskripsi.TabIndex = 8;
             // 
             // btnTambah
             // 
-            this.btnTambah.Location = new System.Drawing.Point(128, 239);
+            this.btnTambah.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.btnTambah.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnTambah.Location = new System.Drawing.Point(400, 284);
             this.btnTambah.Name = "btnTambah";
-            this.btnTambah.Size = new System.Drawing.Size(75, 23);
+            this.btnTambah.Size = new System.Drawing.Size(75, 30);
             this.btnTambah.TabIndex = 9;
             this.btnTambah.Text = "Add";
-            this.btnTambah.UseVisualStyleBackColor = true;
+            this.btnTambah.UseVisualStyleBackColor = false;
             this.btnTambah.Click += new System.EventHandler(this.btnTambah_Click);
             // 
             // btnHapus
             // 
-            this.btnHapus.Location = new System.Drawing.Point(279, 239);
+            this.btnHapus.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.btnHapus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnHapus.Location = new System.Drawing.Point(551, 284);
             this.btnHapus.Name = "btnHapus";
-            this.btnHapus.Size = new System.Drawing.Size(75, 23);
+            this.btnHapus.Size = new System.Drawing.Size(75, 30);
             this.btnHapus.TabIndex = 10;
             this.btnHapus.Text = "Delete";
-            this.btnHapus.UseVisualStyleBackColor = true;
+            this.btnHapus.UseVisualStyleBackColor = false;
             this.btnHapus.Click += new System.EventHandler(this.btnHapus_Click);
             // 
             // btnUpdate
             // 
-            this.btnUpdate.Location = new System.Drawing.Point(421, 239);
+            this.btnUpdate.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.btnUpdate.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnUpdate.Location = new System.Drawing.Point(693, 284);
             this.btnUpdate.Name = "btnUpdate";
-            this.btnUpdate.Size = new System.Drawing.Size(75, 23);
+            this.btnUpdate.Size = new System.Drawing.Size(75, 30);
             this.btnUpdate.TabIndex = 11;
             this.btnUpdate.Text = "Update";
-            this.btnUpdate.UseVisualStyleBackColor = true;
+            this.btnUpdate.UseVisualStyleBackColor = false;
             this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
             // 
             // dataGridViewKelolaAcara
             // 
+            this.dataGridViewKelolaAcara.BackgroundColor = System.Drawing.SystemColors.ActiveCaption;
             this.dataGridViewKelolaAcara.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewKelolaAcara.Location = new System.Drawing.Point(62, 284);
+            this.dataGridViewKelolaAcara.Location = new System.Drawing.Point(334, 336);
             this.dataGridViewKelolaAcara.Name = "dataGridViewKelolaAcara";
-            this.dataGridViewKelolaAcara.Size = new System.Drawing.Size(655, 150);
+            this.dataGridViewKelolaAcara.Size = new System.Drawing.Size(655, 189);
             this.dataGridViewKelolaAcara.TabIndex = 12;
             this.dataGridViewKelolaAcara.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewKelolaAcara_CellContentClick);
             // 
             // btnKembali
             // 
-            this.btnKembali.Location = new System.Drawing.Point(592, 137);
+            this.btnKembali.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.btnKembali.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnKembali.Location = new System.Drawing.Point(836, 185);
             this.btnKembali.Name = "btnKembali";
-            this.btnKembali.Size = new System.Drawing.Size(75, 23);
+            this.btnKembali.Size = new System.Drawing.Size(75, 31);
             this.btnKembali.TabIndex = 13;
             this.btnKembali.Text = "Back";
-            this.btnKembali.UseVisualStyleBackColor = true;
+            this.btnKembali.UseVisualStyleBackColor = false;
             this.btnKembali.Click += new System.EventHandler(this.btnKembali_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Location = new System.Drawing.Point(564, 42);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(184, 25);
+            this.label6.TabIndex = 30;
+            this.label6.Text = "KELOLA ACARA";
+            // 
+            // dtpTanggal
+            // 
+            this.dtpTanggal.Location = new System.Drawing.Point(526, 156);
+            this.dtpTanggal.Name = "dtpTanggal";
+            this.dtpTanggal.Size = new System.Drawing.Size(244, 20);
+            this.dtpTanggal.TabIndex = 31;
             // 
             // KelolaAcara
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.BackgroundImage = global::ucppabdd.Properties.Resources.pngtree_background_biru_polos_keren_hd_vector_image_982123;
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ClientSize = new System.Drawing.Size(1271, 634);
+            this.Controls.Add(this.dtpTanggal);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.btnKembali);
             this.Controls.Add(this.dataGridViewKelolaAcara);
             this.Controls.Add(this.btnUpdate);
@@ -178,7 +214,6 @@
             this.Controls.Add(this.btnTambah);
             this.Controls.Add(this.txtDeskripsi);
             this.Controls.Add(this.txtLokasi);
-            this.Controls.Add(this.txtTanggal);
             this.Controls.Add(this.txtNamaAcara);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
@@ -187,6 +222,7 @@
             this.Controls.Add(this.label1);
             this.Name = "KelolaAcara";
             this.Text = "KelolaAcara";
+            this.Load += new System.EventHandler(this.KelolaAcara_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewKelolaAcara)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -201,7 +237,6 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtNamaAcara;
-        private System.Windows.Forms.TextBox txtTanggal;
         private System.Windows.Forms.TextBox txtLokasi;
         private System.Windows.Forms.TextBox txtDeskripsi;
         private System.Windows.Forms.Button btnTambah;
@@ -209,5 +244,7 @@
         private System.Windows.Forms.Button btnUpdate;
         private System.Windows.Forms.DataGridView dataGridViewKelolaAcara;
         private System.Windows.Forms.Button btnKembali;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.DateTimePicker dtpTanggal;
     }
 }

@@ -12,7 +12,7 @@ namespace ucppabdd
 {
     public partial class main : Form
     {
-        static string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_management;Integrated Security=True;";
+        static string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_managementt;Integrated Security=True;";
         public main()
         {
             InitializeComponent();
@@ -44,6 +44,13 @@ namespace ucppabdd
             KelolaPembayaran kp = new KelolaPembayaran();
             kp.Show();
             this.Hide();  // Sembunyikan form login setelah login berhasil
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ReportAcara reportAcara = new ReportAcara();
+            reportAcara.Show();
+            this.Hide();
         }
     }
 }
