@@ -17,7 +17,7 @@ namespace ucppabdd
             try
             {
                 string localIP = GetLocalIPAddress(); // mendeklarasikan ipaddress
-                connectStr = $"Server={localIP};Initial Catalog=event_managementt;Integrated Security=True;" + $"TrustServerCertificate=True;";
+                connectStr = $"Server={localIP};Initial Catalog=event_managementt;"+"Integrated Security=True;";
 
                 return connectStr;
             }

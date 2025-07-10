@@ -13,11 +13,14 @@ namespace ucppabdd
 {
     public partial class Form1 : Form
     {
-        static string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_managementt;Integrated Security=True;";
+        Koneksi kn = new Koneksi();
+        string connectionString = "";
+        
         public Form1()
         {
             InitializeComponent();
             txtPassword.PasswordChar = '*';
+            connectionString = kn.connectionString();
 
         }
 
