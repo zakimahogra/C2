@@ -14,9 +14,13 @@ namespace ucppabdd
 {
     public partial class ReportAcara : Form
     {
+        Koneksi kn = new Koneksi();
+        string connectionString = "";
+
         public ReportAcara()
         {
             InitializeComponent();
+            connectionString = kn.connectionString();
         }
 
         private void ReportAcara_Load(object sender, EventArgs e)
@@ -27,26 +31,41 @@ namespace ucppabdd
 
         private void reportViewer1_Load(object sender, EventArgs e)
         {
-            string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_managementt;Integrated Security=True;";
+            
 
             // SQL query to retrieve the required data from the database
             string query = @"
-                SELECT        acara.nama_acara, acara.id_acara, acara.tanggal, acara.lokasi, tiket.id_tiket, tiket.kategori, tiket.harga
-FROM            acara INNER JOIN
-                         tiket ON acara.id_acara = tiket.id_acara";
+        SELECT        a.nama_acara, SUM(t.jumlah) AS jumlah_tiket_terjual, SUM(t.harga * t.jumlah) AS total_pendapatan
+FROM            acara AS a INNER JOIN
+                         tiket AS t ON a.id_acara = t.id_acara
+GROUP BY a.nama_acara";
 
-            // Create a DataTable to store the data
+            // Create a DataTable to store the data retrieved from the database
             DataTable dt = new DataTable();
 
             // Use SqlDataAdapter to fill the DataTable with data from the database
+            // The 'using' statement ensures that the SqlConnection object is properly disposed of.
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 SqlDataAdapter da = new SqlDataAdapter(query, conn);
-                da.Fill(dt);
+                try
+                {
+                    conn.Open(); // Open the connection
+                    da.Fill(dt); // Fill the DataTable
+                }
+                catch (Exception ex)
+                {
+                    // Handle any exceptions that occur during database operations
+                    // You might want to log this error or display it to the user in a message box
+                    Console.WriteLine("Error filling DataTable: " + ex.Message);
+                    // Optionally, display a user-friendly message
+                    // MessageBox.Show("Terjadi kesalahan saat memuat data laporan: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
 
-            // Create a ReportDataSource
-            ReportDataSource rds = new ReportDataSource("DataSet1", dt); // Make sure "DataSet1" matches your RDLC dataset name
+            // Create a ReportDataSource.
+            // Make sure "DataSet2" matches the name of your RDLC dataset name.
+            ReportDataSource rds = new ReportDataSource("DataSet2", dt); // Changed from "DataSet1" to "DataSet2"
 
             // Clear any existing data sources and add the new data source
             reportViewer1.LocalReport.DataSources.Clear();
@@ -58,7 +77,6 @@ FROM            acara INNER JOIN
 
             // Refresh the ReportViewer to show the updated report
             reportViewer1.RefreshReport();
-
         }
 
         private void btnKembali_Click(object sender, EventArgs e)

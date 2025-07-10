@@ -281,17 +281,9 @@ namespace ucppabdd {
             
             private global::System.Data.DataColumn columnnama_acara;
             
-            private global::System.Data.DataColumn columnid_acara;
+            private global::System.Data.DataColumn columntotal_pendapatan;
             
-            private global::System.Data.DataColumn columntanggal;
-            
-            private global::System.Data.DataColumn columnlokasi;
-            
-            private global::System.Data.DataColumn columnid_tiket;
-            
-            private global::System.Data.DataColumn columnkategori;
-            
-            private global::System.Data.DataColumn columnharga;
+            private global::System.Data.DataColumn columnjumlah_tiket_terjual;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
@@ -336,49 +328,17 @@ namespace ucppabdd {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn id_acaraColumn {
+            public global::System.Data.DataColumn total_pendapatanColumn {
                 get {
-                    return this.columnid_acara;
+                    return this.columntotal_pendapatan;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn tanggalColumn {
+            public global::System.Data.DataColumn jumlah_tiket_terjualColumn {
                 get {
-                    return this.columntanggal;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn lokasiColumn {
-                get {
-                    return this.columnlokasi;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn id_tiketColumn {
-                get {
-                    return this.columnid_tiket;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn kategoriColumn {
-                get {
-                    return this.columnkategori;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn hargaColumn {
-                get {
-                    return this.columnharga;
+                    return this.columnjumlah_tiket_terjual;
                 }
             }
             
@@ -419,27 +379,15 @@ namespace ucppabdd {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public DataTable1Row AddDataTable1Row(string nama_acara, System.DateTime tanggal, string lokasi, string kategori, decimal harga) {
+            public DataTable1Row AddDataTable1Row(string nama_acara, decimal total_pendapatan, int jumlah_tiket_terjual) {
                 DataTable1Row rowDataTable1Row = ((DataTable1Row)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         nama_acara,
-                        null,
-                        tanggal,
-                        lokasi,
-                        null,
-                        kategori,
-                        harga};
+                        total_pendapatan,
+                        jumlah_tiket_terjual};
                 rowDataTable1Row.ItemArray = columnValuesArray;
                 this.Rows.Add(rowDataTable1Row);
                 return rowDataTable1Row;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public DataTable1Row FindByid_acaraid_tiket(int id_acara, int id_tiket) {
-                return ((DataTable1Row)(this.Rows.Find(new object[] {
-                            id_acara,
-                            id_tiket})));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -460,12 +408,8 @@ namespace ucppabdd {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             internal void InitVars() {
                 this.columnnama_acara = base.Columns["nama_acara"];
-                this.columnid_acara = base.Columns["id_acara"];
-                this.columntanggal = base.Columns["tanggal"];
-                this.columnlokasi = base.Columns["lokasi"];
-                this.columnid_tiket = base.Columns["id_tiket"];
-                this.columnkategori = base.Columns["kategori"];
-                this.columnharga = base.Columns["harga"];
+                this.columntotal_pendapatan = base.Columns["total_pendapatan"];
+                this.columnjumlah_tiket_terjual = base.Columns["jumlah_tiket_terjual"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -473,39 +417,14 @@ namespace ucppabdd {
             private void InitClass() {
                 this.columnnama_acara = new global::System.Data.DataColumn("nama_acara", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnnama_acara);
-                this.columnid_acara = new global::System.Data.DataColumn("id_acara", typeof(int), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnid_acara);
-                this.columntanggal = new global::System.Data.DataColumn("tanggal", typeof(global::System.DateTime), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columntanggal);
-                this.columnlokasi = new global::System.Data.DataColumn("lokasi", typeof(string), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnlokasi);
-                this.columnid_tiket = new global::System.Data.DataColumn("id_tiket", typeof(int), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnid_tiket);
-                this.columnkategori = new global::System.Data.DataColumn("kategori", typeof(string), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnkategori);
-                this.columnharga = new global::System.Data.DataColumn("harga", typeof(decimal), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnharga);
-                this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
-                                this.columnid_acara,
-                                this.columnid_tiket}, true));
+                this.columntotal_pendapatan = new global::System.Data.DataColumn("total_pendapatan", typeof(decimal), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columntotal_pendapatan);
+                this.columnjumlah_tiket_terjual = new global::System.Data.DataColumn("jumlah_tiket_terjual", typeof(int), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnjumlah_tiket_terjual);
                 this.columnnama_acara.AllowDBNull = false;
                 this.columnnama_acara.MaxLength = 255;
-                this.columnid_acara.AutoIncrement = true;
-                this.columnid_acara.AutoIncrementSeed = -1;
-                this.columnid_acara.AutoIncrementStep = -1;
-                this.columnid_acara.AllowDBNull = false;
-                this.columnid_acara.ReadOnly = true;
-                this.columntanggal.AllowDBNull = false;
-                this.columnlokasi.AllowDBNull = false;
-                this.columnlokasi.MaxLength = 255;
-                this.columnid_tiket.AutoIncrement = true;
-                this.columnid_tiket.AutoIncrementSeed = -1;
-                this.columnid_tiket.AutoIncrementStep = -1;
-                this.columnid_tiket.AllowDBNull = false;
-                this.columnid_tiket.ReadOnly = true;
-                this.columnkategori.AllowDBNull = false;
-                this.columnkategori.MaxLength = 100;
-                this.columnharga.AllowDBNull = false;
+                this.columntotal_pendapatan.ReadOnly = true;
+                this.columnjumlah_tiket_terjual.ReadOnly = true;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -659,68 +578,58 @@ namespace ucppabdd {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public int id_acara {
+            public decimal total_pendapatan {
                 get {
-                    return ((int)(this[this.tableDataTable1.id_acaraColumn]));
+                    try {
+                        return ((decimal)(this[this.tableDataTable1.total_pendapatanColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'total_pendapatan\' in table \'DataTable1\' is DBNull.", e);
+                    }
                 }
                 set {
-                    this[this.tableDataTable1.id_acaraColumn] = value;
+                    this[this.tableDataTable1.total_pendapatanColumn] = value;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public System.DateTime tanggal {
+            public int jumlah_tiket_terjual {
                 get {
-                    return ((global::System.DateTime)(this[this.tableDataTable1.tanggalColumn]));
+                    try {
+                        return ((int)(this[this.tableDataTable1.jumlah_tiket_terjualColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'jumlah_tiket_terjual\' in table \'DataTable1\' is DBNull.", e);
+                    }
                 }
                 set {
-                    this[this.tableDataTable1.tanggalColumn] = value;
+                    this[this.tableDataTable1.jumlah_tiket_terjualColumn] = value;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public string lokasi {
-                get {
-                    return ((string)(this[this.tableDataTable1.lokasiColumn]));
-                }
-                set {
-                    this[this.tableDataTable1.lokasiColumn] = value;
-                }
+            public bool Istotal_pendapatanNull() {
+                return this.IsNull(this.tableDataTable1.total_pendapatanColumn);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public int id_tiket {
-                get {
-                    return ((int)(this[this.tableDataTable1.id_tiketColumn]));
-                }
-                set {
-                    this[this.tableDataTable1.id_tiketColumn] = value;
-                }
+            public void Settotal_pendapatanNull() {
+                this[this.tableDataTable1.total_pendapatanColumn] = global::System.Convert.DBNull;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public string kategori {
-                get {
-                    return ((string)(this[this.tableDataTable1.kategoriColumn]));
-                }
-                set {
-                    this[this.tableDataTable1.kategoriColumn] = value;
-                }
+            public bool Isjumlah_tiket_terjualNull() {
+                return this.IsNull(this.tableDataTable1.jumlah_tiket_terjualColumn);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public decimal harga {
-                get {
-                    return ((decimal)(this[this.tableDataTable1.hargaColumn]));
-                }
-                set {
-                    this[this.tableDataTable1.hargaColumn] = value;
-                }
+            public void Setjumlah_tiket_terjualNull() {
+                this[this.tableDataTable1.jumlah_tiket_terjualColumn] = global::System.Convert.DBNull;
             }
         }
         
@@ -884,12 +793,8 @@ namespace ucppabdd.DataSetAcaraTableAdapters {
             tableMapping.SourceTable = "Table";
             tableMapping.DataSetTable = "DataTable1";
             tableMapping.ColumnMappings.Add("nama_acara", "nama_acara");
-            tableMapping.ColumnMappings.Add("id_acara", "id_acara");
-            tableMapping.ColumnMappings.Add("tanggal", "tanggal");
-            tableMapping.ColumnMappings.Add("lokasi", "lokasi");
-            tableMapping.ColumnMappings.Add("id_tiket", "id_tiket");
-            tableMapping.ColumnMappings.Add("kategori", "kategori");
-            tableMapping.ColumnMappings.Add("harga", "harga");
+            tableMapping.ColumnMappings.Add("total_pendapatan", "total_pendapatan");
+            tableMapping.ColumnMappings.Add("jumlah_tiket_terjual", "jumlah_tiket_terjual");
             this._adapter.TableMappings.Add(tableMapping);
         }
         
@@ -906,9 +811,12 @@ namespace ucppabdd.DataSetAcaraTableAdapters {
             this._commandCollection = new global::System.Data.SqlClient.SqlCommand[1];
             this._commandCollection[0] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = "SELECT        acara.nama_acara, acara.id_acara, acara.tanggal, acara.lokasi, tike" +
-                "t.id_tiket, tiket.kategori, tiket.harga\r\nFROM            acara INNER JOIN\r\n     " +
-                "                    tiket ON acara.id_acara = tiket.id_acara";
+            this._commandCollection[0].CommandText = @"/* Filter hanya yang lunas*/
+SELECT        a.nama_acara, SUM(t.jumlah) AS jumlah_tiket_terjual, SUM(t.harga * t.jumlah) AS total_pendapatan
+FROM            acara AS a INNER JOIN
+                         tiket AS t ON a.id_acara = t.id_acara
+GROUP BY a.nama_acara;          
+";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
         }
         

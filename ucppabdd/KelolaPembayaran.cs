@@ -14,13 +14,13 @@ namespace ucppabdd
 {
     public partial class KelolaPembayaran : Form
     {
-        // String koneksi ke database SQL Server Anda.
-        // Dalam aplikasi sungguhan, disarankan untuk menyimpan ini di App.config.
-        static string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_managementt;Integrated Security=True;";
-
+        Koneksi kn = new Koneksi();
+        string connectionString = "";
+       
         public KelolaPembayaran()
         {
             InitializeComponent();
+            connectionString = kn.connectionString();
             InitializeCustomComponents(); // Panggil metode inisialisasi kustom
         }
 
@@ -32,6 +32,9 @@ namespace ucppabdd
             // Menghubungkan event CellClick pada DataGridView ke fungsi
             // Ketika sel di DataGridView diklik, data akan mengisi kolom input.
             dataGridViewKelolaPembayaran.CellClick += dataGridViewKelolaPembayaran_CellContentClick;
+
+            // Jangan set MinDate. Biarkan pengguna bisa melihat tanggal sebelumnya.
+            // dtpTanggalPembayaran.MinDate = DateTime.Today; // Baris ini DIHAPUS atau DIKOMEN
         }
 
         private void KelolaPembayaran_Load(object sender, EventArgs e)
@@ -40,7 +43,7 @@ namespace ucppabdd
             // sudah ditangani di konstruktor melalui InitializeCustomComponents().
         }
 
-        /// --- Metode untuk memuat data ke ComboBoxes dengan MemoryCache ---
+        /// Metode untuk memuat data ke ComboBoxes dengan MemoryCache
         private void LoadComboBoxData()
         {
             // Bersihkan item ComboBoxes sebelum memuat data baru
@@ -124,7 +127,7 @@ namespace ucppabdd
             cmbStatus.SelectedIndex = 0; // Pilih placeholder secara default
         }
 
-        // --- Event handler untuk tombol "Tambah" ---
+        // --- Penambahan Data ---
         private void btnTambah_Click(object sender, EventArgs e)
         {
             // --- Validasi Input Kosong (termasuk ComboBox) ---
@@ -149,6 +152,14 @@ namespace ucppabdd
             string metode = cmbMetodePembayaran.SelectedItem.ToString();
             string status = cmbStatus.SelectedItem.ToString();
             DateTime tanggalPembayaran = dtpTanggalPembayaran.Value; // Ambil nilai dari DateTimePicker
+
+            // REVISI: Validasi Tanggal Pembayaran (tidak boleh di masa lalu)
+            // Bandingkan hanya bagian tanggalnya saja (tanpa waktu) untuk akurasi
+            if (tanggalPembayaran.Date < DateTime.Today.Date)
+            {
+                MessageBox.Show("Tanggal pembayaran tidak boleh di masa lalu. Silakan pilih tanggal hari ini atau setelahnya.", "Kesalahan Input Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Hentikan proses jika tanggal tidak valid
+            }
 
             // --- Konfirmasi Penambahan Data ---
             DialogResult confirmResult = MessageBox.Show("Apakah Anda yakin ingin menambahkan data pembayaran ini?", "Konfirmasi Penambahan Data", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -215,7 +226,7 @@ namespace ucppabdd
             }
         }
 
-        // --- Event handler untuk tombol "Hapus" ---
+        // --- Penghapusan Data ---
         private void btnHapus_Click(object sender, EventArgs e)
         {
             if (dataGridViewKelolaPembayaran.CurrentRow != null)
@@ -256,14 +267,13 @@ namespace ucppabdd
                                 // ExecuteNonQuery cocok untuk DELETE karena tidak mengembalikan data, hanya jumlah baris terpengaruh
                                 int rowsAffected = cmd.ExecuteNonQuery();
 
-                             
-                                    transaction.Commit(); // Komit jika sukses
-                                    MessageBox.Show("Data berhasil dihapus!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                    ClearForm(); // Bersihkan formulir
-                                    LoadData(); // Muat ulang data ke DataGridView
-                               
-                                }
-                            
+                                transaction.Commit(); // Komit jika sukses
+                                MessageBox.Show("Data berhasil dihapus!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                ClearForm(); // Bersihkan formulir
+                                LoadData(); // Muat ulang data ke DataGridView
+
+                            }
+
                         }
                         catch (SqlException sqlEx)
                         {
@@ -290,7 +300,7 @@ namespace ucppabdd
             }
         }
 
-        // --- Event handler untuk tombol "Update" ---
+        // --- Pembaharuan Data ---
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridViewKelolaPembayaran.CurrentRow != null)
@@ -331,6 +341,12 @@ namespace ucppabdd
                 string status = cmbStatus.SelectedItem.ToString();
                 DateTime tanggalPembayaran = dtpTanggalPembayaran.Value;
 
+                // REVISI: Validasi Tanggal Pembayaran (tidak boleh di masa lalu)
+                if (tanggalPembayaran.Date < DateTime.Today.Date)
+                {
+                    MessageBox.Show("Tanggal pembayaran tidak boleh di masa lalu. Silakan pilih tanggal hari ini atau setelahnya.", "Kesalahan Input Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
                 // --- Konfirmasi Update Data ---
                 DialogResult confirmResult = MessageBox.Show("Apakah Anda yakin ingin memperbarui data pembayaran ini?", "Konfirmasi Pembaruan Data", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -363,14 +379,10 @@ namespace ucppabdd
                             // ExecuteNonQuery cocok untuk UPDATE karena tidak mengembalikan data, hanya jumlah baris terpengaruh
                             int rowsAffected = cmd.ExecuteNonQuery();
 
-                 
-                            
-                                transaction.Commit(); // Komit jika sukses
-                                MessageBox.Show("Data pembayaran berhasil diperbarui!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                ClearForm(); // Bersihkan formulir
-                                LoadData(); // Muat ulang data ke DataGridView
-                            
-                       
+                            transaction.Commit(); // Komit jika sukses
+                            MessageBox.Show("Data pembayaran berhasil diperbarui!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            ClearForm(); // Bersihkan formulir
+                            LoadData(); // Muat ulang data ke DataGridView
                         }
                     }
                     catch (SqlException sqlEx)
@@ -404,7 +416,7 @@ namespace ucppabdd
             }
         }
 
-        // --- Event handler saat mengklik sel di DataGridView ---
+        // --- Klik Sel DataGridView ---
         private void dataGridViewKelolaPembayaran_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0) // Pastikan baris yang diklik valid (bukan header kolom)
@@ -414,8 +426,6 @@ namespace ucppabdd
                 // Mengatur nilai ComboBox Nama Peserta
                 if (row.Cells["id_peserta"].Value != DBNull.Value)
                 {
-                    // Convert.ToInt32 bisa menimbulkan error jika value bukan integer.
-                    // Gunakan TryParse untuk penanganan error yang lebih baik atau pastikan tipe data sudah benar di grid.
                     int idPesertaFromGrid;
                     if (int.TryParse(row.Cells["id_peserta"].Value.ToString(), out idPesertaFromGrid))
                     {
@@ -478,6 +488,7 @@ namespace ucppabdd
                     DateTime tanggalFromGrid;
                     if (DateTime.TryParse(row.Cells["tanggal_pembayaran"].Value.ToString(), out tanggalFromGrid))
                     {
+                        // Tidak perlu memeriksa MinDate di sini karena kita ingin nilai dari grid muncul apa adanya
                         dtpTanggalPembayaran.Value = tanggalFromGrid;
                     }
                     else
@@ -492,7 +503,8 @@ namespace ucppabdd
             }
         }
 
-        // --- Metode untuk mengosongkan semua input di formulir ---
+        // --- Metode Umum ---
+        // Metode untuk mengosongkan semua input di formulir
         private void ClearForm()
         {
             cmbNamaPeserta.SelectedIndex = 0; // Reset ComboBox ke placeholder
@@ -502,31 +514,48 @@ namespace ucppabdd
             dtpTanggalPembayaran.Value = DateTime.Today; // Reset DateTimePicker ke tanggal hari ini
         }
 
-        // --- Metode untuk memuat data pembayaran dari database ke DataGridView ---
+        // Metode untuk memuat data pembayaran dari database ke DataGridView
         private void LoadData()
         {
             try
             {
+                // Mulai stopwatch untuk mengukur waktu pemuatan database
+                System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+                stopwatch.Start();
+
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
-                    // Query untuk mengambil data pembayaran dengan JOIN ke data_peserta
-                    // untuk menampilkan nama peserta (nama_peserta) di DataGridView
                     string query = @"
-                        SELECT
-                            p.id_pembayaran,
-                            p.id_peserta,
-                            dp.nama AS nama_peserta, -- Alias kolom nama dari data_peserta
-                            p.jumlah,
-                            p.metode_pembayaran,
-                            p.status,
-                            p.tanggal_pembayaran
-                        FROM
-                            pembayaran p
-                        JOIN
-                            data_peserta dp ON p.id_peserta = dp.id_peserta;";
+                SELECT
+                    p.id_pembayaran,
+                    p.id_peserta,
+                    dp.nama AS nama_peserta, -- Alias kolom nama dari data_peserta
+                    p.jumlah,
+                    p.metode_pembayaran,
+                    p.status,
+                    p.tanggal_pembayaran
+                FROM
+                    pembayaran p
+                JOIN
+                    data_peserta dp ON p.id_peserta = dp.id_peserta;";
                     SqlDataAdapter da = new SqlDataAdapter(query, con);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
+
+                    // Hentikan stopwatch
+                    stopwatch.Stop();
+                    TimeSpan ts = stopwatch.Elapsed;
+
+                    // Hitung total detik dengan presisi milidetik
+                    // Gunakan culture-specific formatting untuk koma sebagai pemisah desimal
+                    string elapsedTime = (ts.TotalMilliseconds / 1000.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+                    // Perbaiki format agar menggunakan koma jika CultureInfo.InvariantCulture menghasilkan titik
+                    // Ini akan memastikan selalu menggunakan koma sebagai pemisah desimal
+                    elapsedTime = elapsedTime.Replace('.', ',');
+
+                    MessageBox.Show($"Data pembayaran berhasil dimuat dari database dalam waktu {elapsedTime} detik.", "Waktu Pemuatan Data Pembayaran", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                     dataGridViewKelolaPembayaran.DataSource = dt;
                 }
             }
@@ -536,7 +565,7 @@ namespace ucppabdd
             }
         }
 
-        // --- Event handler untuk tombol "Kembali" ---
+        // Event handler untuk tombol "Kembali"
         private void btnKembali_Click(object sender, EventArgs e)
         {
             this.Hide(); // Sembunyikan form saat ini

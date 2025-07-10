@@ -197,6 +197,7 @@
             this.dtpTanggal.Name = "dtpTanggal";
             this.dtpTanggal.Size = new System.Drawing.Size(244, 20);
             this.dtpTanggal.TabIndex = 31;
+            this.dtpTanggal.ValueChanged += new System.EventHandler(this.dtpTanggal_ValueChanged);
             // 
             // KelolaAcara
             // 

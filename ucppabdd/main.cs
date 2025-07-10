@@ -12,6 +12,7 @@ namespace ucppabdd
 {
     public partial class main : Form
     {
+
         static string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_managementt;Integrated Security=True;";
         public main()
         {

@@ -4,18 +4,20 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
-using System.Linq;
+using System.Linq; // Penting untuk .AsEnumerable() dan .Where()
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.Caching; // Tambahkan namespace ini untuk MemoryCache
+using System.Text.RegularExpressions; // Tambahkan namespace ini untuk Regex
 
 namespace ucppabdd
 {
     public partial class KelolaDataPeserta : Form
     {
-        // Connection string ke database Anda
-        static string connectionString = "Data Source=MSI\\ZAKIMAHOGRA;Initial Catalog=event_managementt;Integrated Security=True;";
+        Koneksi kn = new Koneksi();
+        string connectionString = "";
+       
 
         // Kunci unik untuk item cache data peserta, acara, dan tiket
         private const string PesertaCacheKey = "PesertaDataCache";
@@ -28,14 +30,52 @@ namespace ucppabdd
         public KelolaDataPeserta()
         {
             InitializeComponent();
+            connectionString = kn.connectionString();
+            // HAPUS BARIS INI JIKA ADA DARI PENGUJIAN SEBELUMNYA.
+            // InvalidatePesertaCache(); // Ini hanya untuk diagnosis sementara
+
             LoadData(); // Memuat data ke DataGridView
             LoadComboBoxData(); // Memuat data ke ComboBoxes
             dataGridViewKelolaDataPeserta.CellClick += dataGridViewKelolaDataPeserta_CellContentClick;
+
+            // --- PENTING: Attach KeyPress event handler untuk txtNoHp ---
+            txtNoHp.KeyPress += TxtNoHp_KeyPress;
+            // --- NEW: Attach KeyPress event handler untuk txtNama ---
+            txtNama.KeyPress += TxtNama_KeyPress;
         }
 
         private void KelolaDataPeserta_Load(object sender, EventArgs e)
         {
             // Initial data load sudah ditangani di konstruktor, tidak perlu di sini lagi
+        }
+
+        // --- NEW METHOD: Event Handler untuk txtNama.KeyPress ---
+        private void TxtNama_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Izinkan hanya huruf (a-z, A-Z), spasi, dan tombol kontrol (seperti Backspace, Delete)
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+            {
+                e.Handled = true; // Abaikan input karakter jika bukan huruf atau spasi
+                MessageBox.Show("Nama hanya boleh berisi huruf dan spasi.", "Input Tidak Valid", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void TxtNoHp_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Izinkan hanya angka, tombol kontrol (seperti Backspace, Delete), dan tanda plus (+)
+            // Tanda plus (+) sering digunakan di awal nomor telepon internasional
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '+'))
+            {
+                e.Handled = true; // Abaikan input karakter jika bukan angka, kontrol, atau '+'
+                MessageBox.Show("Nomor HP hanya boleh berisi angka dan diawali dengan '+'.", "Input Tidak Valid", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            // Pastikan '+' hanya bisa diinput di awal dan hanya satu kali
+            if (e.KeyChar == '+' && (txtNoHp.Text.Length > 0 || txtNoHp.Text.Contains("+")))
+            {
+                e.Handled = true;
+                MessageBox.Show("Tanda '+' hanya boleh di awal dan hanya satu kali.", "Input Tidak Valid", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         // --- Metode untuk memuat data ke ComboBoxes dengan Cache ---
@@ -134,6 +174,21 @@ namespace ucppabdd
                 return;
             }
 
+            // --- Validasi Nama hanya huruf dan spasi saat button diklik ---
+            if (!Regex.IsMatch(txtNama.Text, @"^[a-zA-Z\s]+$"))
+            {
+                MessageBox.Show("Nama hanya boleh berisi huruf dan spasi.", "Validasi Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // --- Validasi Numerik untuk No. HP (saat button diklik) ---
+            // Izinkan angka saja atau angka dengan '+' di awal
+            if (!Regex.IsMatch(txtNoHp.Text, @"^\+?[0-9]+$"))
+            {
+                MessageBox.Show("Nomor HP hanya boleh berisi angka atau diawali dengan '+'.", "Validasi Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             // --- Parsing Input Numerik dari ComboBox ---
             int idAcara;
             if (!int.TryParse(cmbIdAcara.SelectedValue.ToString(), out idAcara))
@@ -193,7 +248,27 @@ namespace ucppabdd
                     {
                         transaction.Rollback(); // Rollback pada error SQL
                     }
-                    if (sqlEx.Number == 547) // Foreign Key constraint violation
+                    // --- PENANGANAN DUPLIKASI DATA & FOREIGN KEY ---
+                    if (sqlEx.Number == 50000) // RAISERROR kustom dari Stored Procedure
+                    {
+                        MessageBox.Show(sqlEx.Message, "Duplikasi Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                    else if (sqlEx.Number == 2627) // Pelanggaran UNIQUE CONSTRAINT dari Database
+                    {
+                        if (sqlEx.Message.Contains("UQ_data_peserta_email"))
+                        {
+                            MessageBox.Show("Email ini sudah terdaftar sebagai peserta.", "Duplikasi Email", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                        else if (sqlEx.Message.Contains("UQ_data_peserta_no_hp"))
+                        {
+                            MessageBox.Show("Nomor HP ini sudah terdaftar sebagai peserta.", "Duplikasi Nomor HP", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Terjadi kesalahan database: {sqlEx.Message}\nKode Error: {sqlEx.Number}", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else if (sqlEx.Number == 547) // Foreign Key constraint violation
                     {
                         MessageBox.Show("Gagal menambahkan peserta: ID Acara atau ID Tiket tidak ditemukan. Pastikan ID Acara dan ID Tiket yang Anda pilih valid dan ada di database.", "Kesalahan Database: ID Acara/Tiket Tidak Ditemukan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
@@ -271,7 +346,14 @@ namespace ucppabdd
                             {
                                 transaction.Rollback(); // Rollback pada error SQL
                             }
-                            MessageBox.Show($"Terjadi kesalahan database: {sqlEx.Message}\nKode Error: {sqlEx.Number}", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (sqlEx.Number == 547) // Foreign Key constraint violation
+                            {
+                                MessageBox.Show("Tidak dapat menghapus peserta ini karena data terkait masih ada di tabel lain (misalnya, Pembayaran).", "Kesalahan Integritas Data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            else
+                            {
+                                MessageBox.Show($"Terjadi kesalahan database: {sqlEx.Message}\nKode Error: {sqlEx.Number}", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -323,6 +405,21 @@ namespace ucppabdd
                 if (!txtEmail.Text.Contains("@") || !txtEmail.Text.EndsWith(".com"))
                 {
                     MessageBox.Show("Format email tidak valid. Email harus mengandung '@' dan diakhiri dengan '.com'.", "Validasi Email", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // --- Validasi Nama hanya huruf dan spasi saat button diklik ---
+                if (!Regex.IsMatch(txtNama.Text, @"^[a-zA-Z\s]+$"))
+                {
+                    MessageBox.Show("Nama hanya boleh berisi huruf dan spasi.", "Validasi Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // --- Validasi Numerik untuk No. HP saat button diklik ---
+                // Izinkan angka saja atau angka dengan '+' di awal
+                if (!Regex.IsMatch(txtNoHp.Text, @"^\+?[0-9]+$"))
+                {
+                    MessageBox.Show("Nomor HP hanya boleh berisi angka atau diawali dengan '+'.", "Validasi Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -393,7 +490,27 @@ namespace ucppabdd
                         {
                             transaction.Rollback(); // Rollback pada error SQL
                         }
-                        if (sqlEx.Number == 547) // Foreign Key constraint violation
+                        // --- PENANGANAN DUPLIKASI DATA & FOREIGN KEY ---
+                        if (sqlEx.Number == 50000) // RAISERROR kustom dari Stored Procedure
+                        {
+                            MessageBox.Show(sqlEx.Message, "Duplikasi Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                        else if (sqlEx.Number == 2627) // Pelanggaran UNIQUE CONSTRAINT dari Database
+                        {
+                            if (sqlEx.Message.Contains("UQ_data_peserta_email"))
+                            {
+                                MessageBox.Show("Email ini sudah terdaftar untuk peserta lain.", "Duplikasi Email", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                            else if (sqlEx.Message.Contains("UQ_data_peserta_no_hp"))
+                            {
+                                MessageBox.Show("Nomor HP ini sudah terdaftar untuk peserta lain.", "Duplikasi Nomor HP", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                            else
+                            {
+                                MessageBox.Show($"Terjadi kesalahan database: {sqlEx.Message}\nKode Error: {sqlEx.Number}", "Kesalahan Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                        }
+                        else if (sqlEx.Number == 547) // Foreign Key constraint violation
                         {
                             MessageBox.Show("Gagal memperbarui peserta: ID Acara atau ID Tiket tidak ditemukan. Pastikan ID Acara dan ID Tiket yang Anda pilih valid dan ada di database.", "Kesalahan Database: ID Acara/Tiket Tidak Ditemukan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
@@ -470,9 +587,14 @@ namespace ucppabdd
         {
             // Coba ambil data dari cache terlebih dahulu
             DataTable dt = _cache.Get(PesertaCacheKey) as DataTable;
+            bool loadedFromCache = false;
 
             if (dt == null) // Jika data tidak ditemukan di cache
             {
+                // Mulai stopwatch untuk mengukur waktu pemuatan database
+                System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+                stopwatch.Start();
+
                 // Muat data dari database
                 try
                 {
@@ -481,31 +603,56 @@ namespace ucppabdd
                         // Query ini akan mengambil semua kolom yang relevan dan JOIN tabel
                         // agar Anda bisa menampilkan nama acara dan kategori tiket di DataGridView
                         string query = @"
-                            SELECT
-                                dp.id_peserta,
-                                dp.nama,
-                                dp.email,
-                                dp.no_hp,
-                                dp.id_acara,
-                                a.nama_acara, -- Tambahkan kolom nama_acara dari tabel Acara
-                                dp.id_tiket,
-                                t.kategori    -- Tambahkan kolom kategori dari tabel Tiket
-                            FROM
-                                data_peserta dp
-                            JOIN
-                                Acara a ON dp.id_acara = a.id_acara
-                            JOIN
-                                Tiket t ON dp.id_tiket = t.id_tiket;";
+                    SELECT
+                        dp.id_peserta,
+                        dp.nama,
+                        dp.email,
+                        dp.no_hp,
+                        dp.id_acara,
+                        a.nama_acara, -- Tambahkan kolom nama_acara dari tabel Acara
+                        dp.id_tiket,
+                        t.kategori    -- Tambahkan kolom kategori dari tabel Tiket
+                    FROM
+                        data_peserta dp
+                    JOIN
+                        Acara a ON dp.id_acara = a.id_acara
+                    JOIN
+                        Tiket t ON dp.id_tiket = t.id_tiket;";
                         SqlDataAdapter da = new SqlDataAdapter(query, con);
                         dt = new DataTable();
                         da.Fill(dt);
+
+                        // Hentikan stopwatch
+                        stopwatch.Stop();
+                        TimeSpan ts = stopwatch.Elapsed;
+
+                        // Hitung total detik dengan presisi milidetik
+                        // Gunakan culture-specific formatting untuk koma sebagai pemisah desimal
+                        string elapsedTime = (ts.TotalMilliseconds / 1000.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+                        // Perbaiki format agar menggunakan koma jika CultureInfo.InvariantCulture menghasilkan titik
+                        // Ini akan memastikan selalu menggunakan koma sebagai pemisah desimal
+                        elapsedTime = elapsedTime.Replace('.', ',');
+
+                        MessageBox.Show($"Data peserta berhasil dimuat dari database dalam waktu {elapsedTime} detik.", "Waktu Pemuatan Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+
+                        // --- NEW: Filter out any unwanted placeholder rows before caching ---
+                        // Ini adalah langkah defensif untuk memastikan baris -1 tidak pernah masuk ke cache DataGridView.
+                        if (dt.Rows.Count > 0 && dt.AsEnumerable().Any(row => row.Field<int>("id_peserta") == -1))
+                        {
+                            // Membuat DataTable baru tanpa baris placeholder
+                            dt = dt.AsEnumerable()
+                                         .Where(row => row.Field<int>("id_peserta") != -1)
+                                         .CopyToDataTable();
+                        }
 
                         // Tambahkan data ke cache dengan sliding expiration 5 menit
                         CacheItemPolicy policy = new CacheItemPolicy
                         {
                             SlidingExpiration = TimeSpan.FromMinutes(5)
                         };
-                        _cache.Set(PesertaCacheKey, dt, policy); // Simpan DataTable ke cache
+                        _cache.Set(PesertaCacheKey, dt, policy); // Simpan DataTable yang sudah difilter ke cache
                     }
                 }
                 catch (Exception ex)
@@ -514,6 +661,22 @@ namespace ucppabdd
                     return; // Keluar jika pembebanan data gagal
                 }
             }
+            else
+            {
+                loadedFromCache = true;
+                MessageBox.Show("Data peserta berhasil dimuat dari cache.", "Pemuatan Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            // --- NEW: Filter lagi jika dt diambil dari cache, untuk berjaga-jaga ---
+            // Ini diperlukan jika ada skenario di mana cache diisi sebelum filter ini ada
+            // atau jika ada mekanisme lain yang bisa memasukkan baris -1 ke cache.
+            if (dt != null && dt.Rows.Count > 0 && dt.AsEnumerable().Any(row => row.Field<int>("id_peserta") == -1))
+            {
+                dt = dt.AsEnumerable()
+                                .Where(row => row.Field<int>("id_peserta") != -1)
+                                .CopyToDataTable();
+            }
+
             // Ikatan data ke DataGridView, baik dari cache maupun dari database
             dataGridViewKelolaDataPeserta.DataSource = dt;
         }
@@ -546,6 +709,12 @@ namespace ucppabdd
         private void cmbIdTiket_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Event ini tidak perlu diisi jika hanya untuk memuat data saat form dibuka
+        }
+
+        private void txtNama_TextChanged(object sender, EventArgs e)
+        {
+            // You can add additional real-time validation here if needed,
+            // but the KeyPress event handles most of it.
         }
     }
 }

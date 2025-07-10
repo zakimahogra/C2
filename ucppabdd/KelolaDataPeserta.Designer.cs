@@ -55,6 +55,7 @@
             this.txtNama.Name = "txtNama";
             this.txtNama.Size = new System.Drawing.Size(244, 20);
             this.txtNama.TabIndex = 40;
+            this.txtNama.TextChanged += new System.EventHandler(this.txtNama_TextChanged);
             // 
             // label4
             // 
